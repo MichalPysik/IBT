@@ -6,6 +6,8 @@ import datetime
 
 dataset = pd.read_csv('weatherAUS.csv')
 
+## Dataset transformation - Version without droping missing values, replacing them with various techniques instead
+
 ''' MONTHS in case its needed
 dates = dataset.iloc[:, 0].values#.join(dataset.iloc[:, 5:7])
 months = []
@@ -88,10 +90,19 @@ for double in dataset.iloc[:, :1].join(dataset.iloc[:, 6]).values:
         sunshines.append(double[1])
     else:
         sunshines.append( group.loc[group['Date'] == double[0][:7], 'Sunshine'].iloc[0] )
-'''
+
 
 
 # WINDDIR9AM, WINDDIR3PM, WINDGUSTDIR - one hot encode
 ohe = OneHotEncoder(sparse=False)
 windDirs = ohe.fit_transform(dataset.iloc[:, 9:11].join(dataset.iloc[:, 7]))
-print(windDirs.shape)
+'''
+
+
+
+# WINDGUSTSPEED, PRESSURE9AM, PRESSURE3PM - REPLACE NAs wirth average for city and month - aroud 10 percent NA
+# GROUP - (Month, Location) - WindGustSpeed, Pressure9AM, Pressure3PM
+group = dataset.iloc[:, :1].join(dataset.iloc[:, 8]).join(dataset.iloc[:, 15:17]).groupby( [dataset.Date.str[5:7]] ).mean().reset_index()
+print(group)
+group = group.dropna()
+print(group)
