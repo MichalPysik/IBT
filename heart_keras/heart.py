@@ -18,7 +18,7 @@ model.add(Dense(32, kernel_regularizer=regularizers.l2(0.01), activation='relu',
 model.add(Dense(16, kernel_regularizer=regularizers.l2(0.01), activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
-model.compile(loss="binary_crossentropy", optimizer="rmsprop", metrics=["accuracy"])
+model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 model.fit(X_train, y_train, epochs=20, batch_size=4, validation_split=0.2)
 
 _, accuracy = model.evaluate(X_test, y_test)
