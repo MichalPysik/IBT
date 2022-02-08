@@ -79,6 +79,7 @@ class NeuralNet:
             print('Error: You have to create a model first before saving it to a file!')
             return
         self.model.save(path, save_format='h5')
+        print(path, "saved succesfully!")
 
 
     def loadModel(self, path):
@@ -86,6 +87,8 @@ class NeuralNet:
             self.model = keras.models.load_model(path)
         except:
             print("Error: Cannot load model, invalid file selected!")
+            raise Exception("Invalid model file")
+        print(path, "loaded succesfully!")
         
 
 
