@@ -16,13 +16,13 @@ y_train = to_categorical(y_train, 11)
 y_test = to_categorical(y_test, 11)
 
 model = models.Sequential()
-model.add(layers.Dense(256, activation='relu', input_shape=(11,)))
-model.add(layers.Dense(256, activation='relu'))
+model.add(layers.Dense(32, activation='relu', input_shape=(11,)))
+model.add(layers.Dense(32, activation='relu'))
 model.add(layers.Dense(11, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-history = model.fit(X_train, y_train, epochs=500, batch_size=64, validation_split=0.2)
+history = model.fit(X_train, y_train, epochs=8, batch_size=32, validation_split=0.2)
 
 loss = history.history['loss']
 val_loss = history.history['val_loss']

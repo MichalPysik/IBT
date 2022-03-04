@@ -66,23 +66,27 @@ class View:
 
         self.dsCBLabel = ttk.Label(self.leftFrame, text = "Select active dataset:")
         self.dsComboBox = ttk.Combobox(self.leftFrame, state='readonly')
-        self.dsComboBox['values'] = ('Heart failure', 'Rain in Australia')
+        self.dsComboBox['values'] = ('Heart failure', 'Rain in Australia', 'Wine quality')
         self.dsComboBox.bind('<<ComboboxSelected>>', self.dsComboBox_callback)
         self.dsComboBox.current(0)
         self.dsComboBox_callback()
 
         self.epochsBatchFrame = tk.Frame(self.leftFrame)
         self.epochsLabel = tk.Label(self.epochsBatchFrame, text="Epochs:", anchor="e", width=11)
-        self.epochsEntry = tk.Entry(self.epochsBatchFrame, width=5)
+        self.epochsSpinbox = tk.Spinbox(self.epochsBatchFrame, width=5, from_=1, to=99999)
         self.batchSizeLabel = tk.Label(self.epochsBatchFrame, text="Batch size:", anchor="e", width=11)
-        self.bachSizeEntry = tk.Entry(self.epochsBatchFrame, width=5)
+        self.bachSizeSpinbox = tk.Spinbox(self.epochsBatchFrame, width=5, from_=1, to=99999)
+        self.trainLossVar = tk.IntVar()
+        self.trainLossCheckbox = tk.Checkbutton(self.leftFrame, variable=self.trainLossVar, text="Show training loss graph", onvalue=1, offvalue=0)
+        self.trainAccVar = tk.IntVar()
+        self.trainAccCheckbox = tk.Checkbutton(self.leftFrame, variable=self.trainAccVar, text="Show training accuracy graph", onvalue=1, offvalue=0)
         self.trainModelButton = tk.Button(self.leftFrame, text="Train model", command=self.trainModel_callback)
 
         self.addLayerButton = tk.Button(self.leftFrame, text="Add hidden layer", command=self.addHiddenLayer)
         self.removeLayerButton = tk.Button(self.leftFrame, text="Remove hidden layer", command=self.removeHiddenLayer)
-        self.inputLayerNum = tk.Scale(self.leftFrame, from_=1, to=32, orient=HORIZONTAL, length=200)
+        self.inputLayerNum = tk.Scale(self.leftFrame, from_=1, to=1024, orient=HORIZONTAL, length=360)
         self.hiddenLayersFrame = tk.Frame(self.leftFrame, height=1)
-        self.outputLayerNum = tk.Scale(self.leftFrame, from_=1, to=32, orient=HORIZONTAL, length=200)
+        self.outputLayerNum = tk.Scale(self.leftFrame, from_=1, to=1024, orient=HORIZONTAL, length=360)
 
         self.lossOptimizerFrame = tk.Frame(self.leftFrame)
         self.lossCBLabel = ttk.Label(self.lossOptimizerFrame, text = "Loss:", anchor="e", width=10)
@@ -113,20 +117,24 @@ class View:
 
     def trainModel_callback(self, event=None):
         try:
-            epochs = int(self.epochsEntry.get())
+            epochs = int(self.epochsSpinbox.get())
             if epochs < 1:
                 raise Exception()
         except:
             print("Error: Number of epochs must be a positive integer!")
             return
         try:
-            batch_size = int(self.bachSizeEntry.get())
+            batch_size = int(self.bachSizeSpinbox.get())
             if batch_size < 1:
                 raise Exception()
         except:
             print("Error: Batch size must be a positive integer!")
             return
         self.NN.trainModel(epochs, batch_size)
+        if self.trainLossVar.get():
+            self.NN.showTrainLossGraph()
+        if self.trainAccVar.get():
+            self.NN.showTrainAccGraph()
 
 
     def dsComboBox_callback(self, event=None):
@@ -170,9 +178,11 @@ class View:
         self.dsComboBox.pack(pady=(0,10))
         self.epochsBatchFrame.pack()
         self.epochsLabel.grid(row=0, column=0)
-        self.epochsEntry.grid(row=0, column=1)
+        self.epochsSpinbox.grid(row=0, column=1)
         self.batchSizeLabel.grid(row=1, column=0)
-        self.bachSizeEntry.grid(row=1, column=1)
+        self.bachSizeSpinbox.grid(row=1, column=1)
+        self.trainLossCheckbox.pack()
+        self.trainAccCheckbox.pack()
         self.trainModelButton.pack(pady=10)
         self.addLayerButton.pack(pady=(10,5))
         self.removeLayerButton.pack(pady=5)
@@ -193,7 +203,7 @@ class View:
 
 
     def addHiddenLayer(self):
-        self.hidden_layers.append(tk.Scale(self.hiddenLayersFrame, from_=2, to=32, orient=HORIZONTAL, length=200))
+        self.hidden_layers.append(tk.Scale(self.hiddenLayersFrame, from_=1, to=1024, orient=HORIZONTAL, length=360))
         self.hidden_layers[-1].pack()
 
 
