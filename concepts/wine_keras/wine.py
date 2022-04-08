@@ -22,7 +22,7 @@ model.add(layers.Dense(11, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-history = model.fit(X_train, y_train, epochs=8, batch_size=32, validation_split=0.2)
+history = model.fit(X_train, y_train, epochs=80, batch_size=32, validation_split=0.2)
 
 loss = history.history['loss']
 val_loss = history.history['val_loss']

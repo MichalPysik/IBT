@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 
 
 dataset = pd.read_csv('heart_failure_clinical_records_dataset.csv')
@@ -47,3 +48,15 @@ plt.ylabel('Loss')
 plt.legend(loc="best")
 
 plt.show()
+
+
+predictions = model.predict(X_test)
+for i in range(len(predictions)):
+    if predictions[i] > 0.5:
+        predictions[i] = 1
+    else:
+        predictions[i] = 0
+
+
+cm = confusion_matrix(y_test, predictions)
+print(cm)
