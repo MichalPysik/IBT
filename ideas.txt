@@ -1,0 +1,2 @@
+NÁPADY NA EXPERIMENTY
+- vybrat 3 datasety (csv, obrazky, sekvence) a vždy otestovat 2-3 toologie vhodné sítě + obě dvě nevhodné sítě
