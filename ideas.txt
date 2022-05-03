@@ -1,2 +1,3 @@
 NÁPADY NA EXPERIMENTY
 - vybrat 3 datasety (csv, obrazky, sekvence) a vždy otestovat 2-3 topologie vhodné sítě + obě dvě nevhodné sítě
+- v customization menu (parametry sitě vlevo) povolit pouze parametry kompatibilní s aktuální kombinací typu sítě a datasetu
