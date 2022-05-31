@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 from keras.models import Sequential
-from keras.layers import Dense, Conv1D, GlobalAveragePooling1D, BatchNormalization, Flatten, Dropout, SimpleRNN, Input, ReLU
+from keras.layers import Dense, Conv1D, GlobalAveragePooling1D, BatchNormalization, Flatten, Dropout, SimpleRNN, LSTM, GRU, Input, ReLU
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
@@ -57,7 +57,7 @@ def datasetCNN():
 
 def buildRNN():
     model = Sequential()
-    model.add(SimpleRNN(256, dropout=0.2, input_shape=(500, 1)))
+    model.add(GRU(128, dropout=0.2, input_shape=(500, 1))) # or SimpleRNN/LSTM with exact same arguments
     model.add(Dense(1, activation='sigmoid'))
     return model
 
@@ -71,7 +71,7 @@ def datasetRNN():
 
 (X_train, y_train), (X_test, y_test) = datasetRNN()
 
-model = buildRNN()
+model = buildCNN()
 
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
