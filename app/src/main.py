@@ -1,7 +1,7 @@
 import tkinter as tk
 import sys
-import Utils as ut
-import View
+import utils as ut
+import view
 
 
 class TextRedirector(object):
@@ -15,11 +15,9 @@ class TextRedirector(object):
         self.widget.configure(state="disabled")
 
 
-
-
 if __name__ == '__main__':
     root = tk.Tk()
-    view = View.View(root)
+    view = view.View(root)
     view.setup()
 
     #textbox = tk.Text(root, width=60)

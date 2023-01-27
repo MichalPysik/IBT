@@ -3,8 +3,8 @@ import tkinter as tk
 from tkinter import RIGHT, ttk
 from tkinter.constants import HORIZONTAL, UNITS, VERTICAL
 from tkinter.filedialog import asksaveasfile
-import Utils as ut
-import NeuralNet
+import utils as ut
+from experiment import Experiment
 import sys
 
 
@@ -24,13 +24,10 @@ class StdoutRedirector(object):
         pass
 
 
-
-
 class View:
     def __init__(self, parent):
         self.container = parent
-        self.hidden_layers = []
-        self.NN = NeuralNet.NeuralNet()
+        self.experiment = Experiment('Tabular')
         self.savePath = None
 
 
@@ -66,7 +63,7 @@ class View:
 
         self.dsCBLabel = ttk.Label(self.leftFrame, text = "Select active dataset:")
         self.dsComboBox = ttk.Combobox(self.leftFrame, state='readonly')
-        self.dsComboBox['values'] = ('Heart failure', 'Rain in Australia', 'Wine quality')
+        self.dsComboBox['values'] = ('Tabular', 'Image', 'Sequence')
         self.dsComboBox.bind('<<ComboboxSelected>>', self.dsComboBox_callback)
         self.dsComboBox.current(0)
         self.dsComboBox_callback()
@@ -81,12 +78,6 @@ class View:
         self.trainAccVar = tk.IntVar()
         self.trainAccCheckbox = tk.Checkbutton(self.leftFrame, variable=self.trainAccVar, text="Show training accuracy graph", onvalue=1, offvalue=0)
         self.trainModelButton = tk.Button(self.leftFrame, text="Train model", command=self.trainModel_callback)
-
-        self.addLayerButton = tk.Button(self.leftFrame, text="Add hidden layer", command=self.addHiddenLayer)
-        self.removeLayerButton = tk.Button(self.leftFrame, text="Remove hidden layer", command=self.removeHiddenLayer)
-        self.inputLayerNum = tk.Scale(self.leftFrame, from_=1, to=1024, orient=HORIZONTAL, length=360)
-        self.hiddenLayersFrame = tk.Frame(self.leftFrame, height=1)
-        self.outputLayerNum = tk.Scale(self.leftFrame, from_=1, to=1024, orient=HORIZONTAL, length=360)
 
         self.lossOptimizerFrame = tk.Frame(self.leftFrame)
         self.lossCBLabel = ttk.Label(self.lossOptimizerFrame, text = "Loss:", anchor="e", width=10)
@@ -130,6 +121,7 @@ class View:
         except:
             print("Error: Batch size must be a positive integer!")
             return
+        pass
         self.NN.trainModel(epochs, batch_size)
         if self.trainLossVar.get():
             self.NN.showTrainLossGraph()
@@ -138,7 +130,7 @@ class View:
 
 
     def dsComboBox_callback(self, event=None):
-        self.NN.setDataset(self.dsComboBox.get())
+        self.experiment = Experiment(self.dsComboBox.get())
 
 
     def createModel_callback(self, event=None):
@@ -184,14 +176,6 @@ class View:
         self.trainLossCheckbox.pack()
         self.trainAccCheckbox.pack()
         self.trainModelButton.pack(pady=10)
-        self.addLayerButton.pack(pady=(10,5))
-        self.removeLayerButton.pack(pady=5)
-
-        self.inputLayerNum.pack()
-        self.hiddenLayersFrame.pack()
-        for hl in self.hidden_layers:
-            hl.pack()
-        self.outputLayerNum.pack()
 
         self.lossOptimizerFrame.pack(pady=(20,5))
         self.lossCBLabel.grid(row=0, column=0)
@@ -200,21 +184,6 @@ class View:
         self.optimizerComboBox.grid(row=1, column=1)
 
         self.createModelButton.pack(pady=10)
-
-
-    def addHiddenLayer(self):
-        self.hidden_layers.append(tk.Scale(self.hiddenLayersFrame, from_=1, to=1024, orient=HORIZONTAL, length=360))
-        self.hidden_layers[-1].pack()
-
-
-    def removeHiddenLayer(self):
-        try:
-            self.hidden_layers[-1].destroy()
-            self.hidden_layers.pop()
-            if len(self.hidden_layers) == 0:
-                self.hiddenLayersFrame.config(height=1)
-        except:
-            pass
 
         
 

@@ -3,31 +3,8 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense
 import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
-
-
-class Dataset:
-    def __init__(self, name):
-        self.name = name
-        if name == 'Heart failure':
-            self.filename = 'heart_failure_clinical_records_dataset.csv'
-            self.rows = 12
-        elif name == 'Rain in Australia':
-            self.filename = 'weatherAUS_transformed_drop.csv'
-            self.rows = 92
-        elif name == 'Wine quality':
-            self.filename = 'WineQT.csv'
-            self.rows = 11
-        else:
-            return
-
-        ds = pd.read_csv('datasets/' + self.filename)
-        X = ds.iloc[:, :-1].values
-        y = ds.iloc[:, -1].values
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.15)
-        print(self.filename, 'has been selected as active dataset')
+import architectures
         
 
 
@@ -41,8 +18,7 @@ class Callback(keras.callbacks.Callback):
 
             
 
-
-class NeuralNet:
+class NN:
     def __init__(self):
         self.model = None
         self.dataset = None
@@ -117,21 +93,20 @@ class NeuralNet:
         plt.show()
 
 
-    def saveModel(self, path):
-        if self.model is None:
-            print('Error: You have to create a model first before saving it to a file!')
-            return
-        self.model.save(path, save_format='h5')
-        print(path, "saved succesfully!")
+    #def saveModel(self, path):
+    #    if self.model is None:
+    #        print('Error: You have to create a model first before saving it to a file!')
+    #        return
+    #    self.model.save(path, save_format='h5')
+    #    print(path, "saved succesfully!")
 
-
-    def loadModel(self, path):
-        try:
-            self.model = keras.models.load_model(path)
-        except:
-            print("Error: Cannot load model, invalid file selected!")
-            raise Exception("Invalid model file")
-        print(path, "loaded succesfully!")
+    #def loadModel(self, path):
+    #    try:
+    #        self.model = keras.models.load_model(path)
+    #    except:
+    #        print("Error: Cannot load model, invalid file selected!")
+    #        raise Exception("Invalid model file")
+    #    print(path, "loaded succesfully!")
         
 
 
