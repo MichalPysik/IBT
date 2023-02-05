@@ -9,8 +9,33 @@ def createNetwork(data_type, network_id, input_shape, num_classes, optimizer='ad
     model = Sequential()
 
     if data_type == 'Tabular':
-        if network_id == 0:
-            pass
+        if network_id == 0: # MLP single hidden
+            model.add(layers.Flatten(input_shape=input_shape))
+            model.add(layers.Dense(150, activation='relu'))
+            model.add(layers.Dropout(0.1))
+
+        elif network_id == 1: # 1D CNN
+            model.add(layers.Reshape((input_shape[0], 1), input_shape=input_shape))
+            model.add(layers.Conv1D(32, kernel_size=3))
+            model.add(layers.MaxPooling1D(pool_size=2))
+            model.add(layers.Dropout(0.1))
+            model.add(layers.Flatten())
+            model.add(layers.Dense(10, activation='relu'))
+            model.add(layers.Dropout(0.1))
+
+        elif network_id == 2: # LSTM
+            model.add(layers.Reshape((input_shape[0], 1), input_shape=input_shape))
+            model.add(layers.LSTM(42, dropout=0.1))
+            model.add(layers.Dropout(0.1))
+
+        elif network_id == 3: # MLP three hidden
+            model.add(layers.Flatten(input_shape=input_shape))
+            model.add(layers.Dense(50, activation='relu'))
+            model.add(layers.Dropout(0.4))
+            model.add(layers.Dense(50, activation='relu'))
+            model.add(layers.Dropout(0.4))
+            model.add(layers.Dense(50, activation='relu'))
+            model.add(layers.Dropout(0.4))
             
 
     elif data_type == 'Image':
