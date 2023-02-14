@@ -15,7 +15,8 @@ X_test = X_test.astype('float32') / 255
 y_train = to_categorical(y_train, num_classes=num_classes)
 y_test = to_categorical(y_test, num_classes=num_classes)
 
-
+print(X_train.shape[1:])
+exit()
 #model_MLP = createNetwork('Image', 0, X_train.shape[1:], num_classes)
 #model_CNN = createNetwork('Image', 1, X_train.shape[1:], num_classes)
 model_RNN = createNetwork('Image', 2, X_train.shape[1:], num_classes)

@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv('MiniBooNE_PID.txt', delim_whitespace=True, header=None)
+df = pd.read_csv('MiniBooNE_PID_clean.txt', delim_whitespace=True, header=None)
 
 classes = [1] * 36499 + [0] * 93565
 

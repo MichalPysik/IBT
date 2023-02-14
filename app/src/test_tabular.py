@@ -25,6 +25,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, shuffle=True, test_siz
 
 num_classes = max(np.max(y_test), np.max(y_train)) - min(np.min(y_test), np.min(y_train)) + 1
 
+print(X_train.shape[1:])
+exit()
 model_MLP = createNetwork('Tabular', 0, X_train.shape[1:], num_classes)
 model_MLPx = createNetwork('Tabular', 3, X_train.shape[1:], num_classes)
 model_CNN = createNetwork('Tabular', 1, X_train.shape[1:], num_classes)

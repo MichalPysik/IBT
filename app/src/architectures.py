@@ -95,16 +95,15 @@ def createNetwork(data_type, network_id, input_shape, num_classes, optimizer='ad
         elif network_id == 1: # CNN
             model.add(layers.Embedding(10000, 32, input_length=500))
             model.add(layers.Dropout(0.4))
-            model.add(layers.Conv1D(64, kernel_size=3, strides=1, 
-                padding='same', activation='relu'))
+            model.add(layers.Conv1D(64, kernel_size=3, padding='same', activation='relu'))
             model.add(layers.GlobalMaxPooling1D())
-            model.add(layers.Dense(256, activation='relu', kernel_initializer='glorot_uniform'))
+            model.add(layers.Dense(256, activation='relu'))
             model.add(layers.Dropout(0.4))
 
         elif network_id == 2: # RNN LSTM
             embed_vec_len = 32
             model.add(layers.Embedding(10000, embed_vec_len, input_length=500))
-            model.add(layers.LSTM(100, dropout=0.3, recurrent_dropout=0.0))
+            model.add(layers.LSTM(100, dropout=0.3))
             model.add(layers.Dropout(0.3))
 
         else: # RNN Deep LSTM
