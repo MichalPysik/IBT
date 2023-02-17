@@ -15,19 +15,15 @@ class TextRedirector(object):
         self.widget.configure(state="disabled")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     root = tk.Tk()
     view = view.View(root)
     view.setup()
 
-    #textbox = tk.Text(root, width=60)
-    #sys.stdout = TextRedirector(textbox)
-    #root.geometry('900x800')
-    #root.configure(bg='#606060')
+    # textbox = tk.Text(root, width=60)
+    # sys.stdout = TextRedirector(textbox)
+    # root.geometry('900x800')
+    # root.configure(bg='#606060')
     root.geometry("%sx%s" % (ut.window_width, ut.window_height))
-    root.title('Neural Network Keras')
+    root.title("Neural Network Keras")
     root.mainloop()
-
-
-
-
