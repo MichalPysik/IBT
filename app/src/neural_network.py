@@ -7,14 +7,6 @@ from matplotlib import pyplot as plt
         
 
 
-
-class Callback(keras.callbacks.Callback): 
-    def __init__(self, epochs):
-        self.epochs = epochs
-
-    def on_epoch_end(self, epoch, logs=None):
-        print('Epoch: ' + str(epoch+1) + '/' + str(self.epochs) + '  loss: ' + str(logs['loss']) + '  accuracy: ' + str(logs['accuracy']))
-
             
 
 class NN:

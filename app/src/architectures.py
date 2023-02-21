@@ -1,6 +1,12 @@
 from keras import Sequential
 import keras.layers as layers
 
+architecture_names = {
+    "Tabular": ["Tabular_MLP", "Tabular_CNN", "Tabular_RNN", "Tabular_MLPx"],
+    "Image": ["Image_MLP", "Image_CNN", "Image_RNN", "Image_CNNx"],
+    "Sequential": ["Sequential_MLP", "Sequential_CNN", "Sequential_RNN", "Sequential_RNNx"]
+}
+
 # for each data type, networks with ids 0, 1, 2 are MLP, CNN, RNN
 # network with id 3 is always additional network based on the current data type (e.g. another CNN for image data)
 def create_network(
@@ -8,7 +14,6 @@ def create_network(
     network_id,
     input_shape,
     num_classes,
-    optimizer="adam",
     show_summary=True,
     top_words=10000,
     max_review_len=500,
@@ -167,15 +172,9 @@ def create_network(
     if num_classes > 2:
         model.add(layers.Dense(num_classes))
         model.add(layers.Activation("softmax"))
-        model.compile(
-            loss="categorical_crossentropy", optimizer=optimizer, metrics=["accuracy"]
-        )
     else:
         model.add(layers.Dense(1))
         model.add(layers.Activation("sigmoid"))
-        model.compile(
-            loss="binary_crossentropy", optimizer=optimizer, metrics=["accuracy"]
-        )
 
     if show_summary:
         model.summary()

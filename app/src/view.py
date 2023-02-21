@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import RIGHT, ttk
+from tkinter import RIGHT, ttk, messagebox
 from tkinter.constants import HORIZONTAL, UNITS, VERTICAL
 import utils as ut
 from experiment import Experiment
 import sys
+from architectures import create_network, architecture_names
 
 
 # https://stackoverflow.com/questions/18517084/how-to-redirect-stdout-to-a-tkinter-text-widget
@@ -37,9 +38,9 @@ class View:
     def create_widgets(self):
         self.menubar = tk.Menu(self.container)
         self.modelmenu = tk.Menu(self.menubar, tearoff=0)
-        self.modelmenu.add_command(label="Load models", command=self.load_models_callback)
-        self.modelmenu.add_command(label="Save models", command=self.save_models_callback)
-        self.menubar.add_cascade(label="Model", menu=self.modelmenu)
+        self.modelmenu.add_command(label="Save selected", command=self.save_models_callback)
+        self.modelmenu.add_command(label="Load selected", command=self.load_models_callback)
+        self.menubar.add_cascade(label="Models", menu=self.modelmenu)
         self.menubar.add_command(label="Help", command=self.help_callback)
         self.menubar.add_command(label="Clear screen", command=self.clear_screen_callback)
         self.container.bind('<Control-o>', lambda event:self.load_models_callback())
@@ -53,7 +54,8 @@ class View:
         self.container.config(menu=self.menubar)
 
         self.leftFrame = tk.Frame(self.container)
-        self.textWindow = tk.Text(self.container, width=500, height=500, state='disabled', bg='#121212', fg='#ffffff')
+        self.scrollbar = tk.Scrollbar(self.container, orient='vertical')
+        self.textWindow = tk.Text(self.container, width=500, height=500, state='disabled', yscrollcommand=self.scrollbar.set, bg='#121212', fg='#ffffff')
         sys.stdout = StdoutRedirector(self.textWindow)
 
         self.dsCBLabel = ttk.Label(self.leftFrame, text = "Selected experiment:")
@@ -62,7 +64,7 @@ class View:
         self.dsComboBox['values'] = ('Tabular', 'Image', 'Sequential')
         self.dsComboBox.bind('<<ComboboxSelected>>', self.dsComboBox_callback)
 
-        self.selectNetworksLabel = ttk.Label(self.leftFrame, text = "Selected neural networks:")
+        self.selectNetworksLabel = ttk.Label(self.leftFrame, text = "Selected models:")
         self.selectNetworksFrame = tk.Frame(self.leftFrame)
         self.network0Var = tk.BooleanVar(value=True)
         self.network1Var = tk.BooleanVar(value=True)
@@ -75,14 +77,14 @@ class View:
 
         self.epochsBatchFrame = tk.Frame(self.leftFrame)
         self.epochsLabel = tk.Label(self.epochsBatchFrame, text="Epochs:", anchor="e", width=11)
-        self.epochsSpinbox = tk.Spinbox(self.epochsBatchFrame, width=5, from_=1, to=99999)
+        self.epochsVar = tk.StringVar(value="10")
+        self.epochsSpinbox = tk.Spinbox(self.epochsBatchFrame, width=5, from_=1, to=99999, textvariable=self.epochsVar)
+        self.batchSizeVar = tk.StringVar(value="128")
         self.batchSizeLabel = tk.Label(self.epochsBatchFrame, text="Batch size:", anchor="e", width=11)
-        self.bachSizeSpinbox = tk.Spinbox(self.epochsBatchFrame, width=5, from_=1, to=99999)
-        self.trainLossVar = tk.IntVar()
-        self.trainLossCheckbox = tk.Checkbutton(self.leftFrame, variable=self.trainLossVar, text="Show training loss graph", onvalue=1, offvalue=0)
-        self.trainAccVar = tk.IntVar()
-        self.trainAccCheckbox = tk.Checkbutton(self.leftFrame, variable=self.trainAccVar, text="Show training accuracy graph", onvalue=1, offvalue=0)
-        self.trainModelButton = tk.Button(self.leftFrame, text="Train model", command=self.train_models_callback)
+        self.batchSizeSpinbox = tk.Spinbox(self.epochsBatchFrame, width=5, from_=1, to=99999, textvariable=self.batchSizeVar)
+
+        self.trainModelButton = tk.Button(self.leftFrame, text="Train models", command=self.train_models_callback)
+        self.testModelButton = tk.Button(self.leftFrame, text="Test models", command=self.test_models_callback)
 
 
     def help_callback(self, event=None):
@@ -97,45 +99,108 @@ class View:
 
     def train_models_callback(self, event=None):
         try:
-            epochs = int(self.epochsSpinbox.get())
+            epochs = int(self.epochsVar.get())
             if epochs < 1:
                 raise Exception()
         except:
             print("Error: Number of epochs must be a positive integer!")
             return
         try:
-            batch_size = int(self.bachSizeSpinbox.get())
+            batch_size = int(self.batchSizeVar.get())
             if batch_size < 1:
                 raise Exception()
         except:
             print("Error: Batch size must be a positive integer!")
             return
-        pass
+        loss_fn = 'binary_crossentropy' if self.experiment.dataset.num_classes == 2 else 'categorical_crossentropy'
+        optimizer = 'rmsprop' if self.experiment.data_type == 'Sequential' else 'adam'
+        selected_networks = [self.network0Var.get(), self.network1Var.get(), self.network2Var.get(), self.network3Var.get()]
+        for i in range(len(selected_networks)):
+            if selected_networks[i]:
+                if self.experiment.data_type == "Sequential":
+                    if not i:
+                        X_train, X_test = self.experiment.dataset.X_train_vectorized, self.experiment.dataset.X_test_vectorized
+                    else:
+                        X_train, X_test = self.experiment.dataset.X_train_padded, self.experiment.dataset.X_test_padded
+                else:
+                    X_train, X_test = self.experiment.dataset.X_train, self.experiment.dataset.X_test
+                if not self.experiment.networks[i]:
+                    input_shape = self.experiment.dataset.vectorized_sample_shape if not i and self.experiment.data_type == 'Sequential' else self.experiment.dataset.padded_sample_shape if self.experiment.data_type == 'Sequential'else self.experiment.dataset.sample_shape
+                    self.experiment.networks[i] = create_network(self.experiment.data_type, i, input_shape=input_shape, num_classes=self.experiment.dataset.num_classes, show_summary=False)
+                self.experiment.networks[i].compile(loss=loss_fn, optimizer=optimizer, metrics=self.metrics)
+                self.experiment.networks[i].fit(
+                    X_train,
+                    self.experiment.dataset.y_train,
+                    batch_size=batch_size,
+                    epochs=epochs,
+                    validation_data=(X_test, self.experiment.dataset.y_test),
+                    callbacks=[ut.TrainProgressCallback(epochs)],
+                    verbose=0
+                )
+
+    def test_models_callback(self, event=None):
+        try:
+            batch_size = int(self.batchSizeVar.get())
+            if batch_size < 1:
+                raise Exception()
+        except:
+            print("Error: Batch size must be a positive integer!")
+            return
+        loss_fn = 'binary_crossentropy' if self.experiment.dataset.num_classes == 2 else 'categorical_crossentropy'
+        optimizer = 'rmsprop' if self.experiment.data_type == 'Sequential' else 'adam'
+        selected_networks = [self.network0Var.get(), self.network1Var.get(), self.network2Var.get(), self.network3Var.get()]
+        for i in range(len(selected_networks)):
+            if selected_networks[i]:
+                if self.experiment.data_type == "Sequential":
+                    if not i:
+                        X_test = self.experiment.dataset.X_test_vectorized
+                    else:
+                        X_test = self.experiment.dataset.X_test_padded
+                else:
+                    X_test = self.experiment.dataset.X_test
+                if not self.experiment.networks[i]:
+                    input_shape = self.experiment.dataset.vectorized_sample_shape if not i and self.experiment.data_type == 'Sequential' else self.experiment.dataset.padded_sample_shape if self.experiment.data_type == 'Sequential'else self.experiment.dataset.sample_shape
+                    self.experiment.networks[i] = create_network(self.experiment.data_type, i, input_shape=input_shape, num_classes=self.experiment.dataset.num_classes, show_summary=False)
+                self.experiment.networks[i].compile(loss=loss_fn, optimizer=optimizer, metrics=self.metrics)
+                self.experiment.networks[i].evaluate(
+                    X_test,
+                    self.experiment.dataset.y_test,
+                    batch_size=batch_size,
+                    verbose='auto'
+                )
 
 
-    def dsComboBox_callback(self, event=None, setup=False):
+    def dsComboBox_callback(self, event=None):
         selected_networks = [self.network0Var.get(), self.network1Var.get(), self.network2Var.get(), self.network3Var.get()]
         self.experiment = Experiment(self.dsSelected.get(), selected_networks)
 
 
-    def load_models_callback(self, event=None):
-        loadPath = tk.filedialog.askopenfilename(filetypes=(("H5 file", "*.h5"),("All Files", "*.*") ))
-        try:
-            self.NN.loadModel(loadPath)
-            self.savePath = loadPath
-        except:
-            pass
-
-
+    
     def save_models_callback(self, event=None):
-        if self.savePath is None:
-            self.savePath = tk.filedialog.asksaveasfilename(defaultextension='.h5', filetypes=(("H5 file", "*.h5"),("All Files", "*.*") ))
-        self.NN.saveModel(self.savePath)
+        if not self.experiment:
+            print("You have to select a dataset before loading stored weights of selected models.")
+        if not messagebox.askokcancel(title="Save weights of selected models", message=ut.ask_save_text, icon=messagebox.WARNING):
+            return
+        selected_networks = [self.network0Var.get(), self.network1Var.get(), self.network2Var.get(), self.network3Var.get()]
+        for i in range(len(selected_networks)):
+            if not selected_networks[i]:
+                continue
+            self.experiment.networks[i].save_weights(ut.saved_weights_path + "/" + self.experiment.data_type + "/" + architecture_names[self.experiment.data_type][i] + ".h5")
+        print("The current weights of " + ", ".join([name for index,name in enumerate(architecture_names[self.experiment.data_type]) if selected_networks[index]]) + " have been saved successfully saved to \'" + ut.saved_weights_path + "/" + self.experiment.data_type + "\'.")
+
+
+
+    def load_models_callback(self, event=None):
+        if not messagebox.askokcancel(title="Load weights of selected models", message=ut.ask_load_text, icon=messagebox.WARNING):
+            return
 
 
     def setup_layout(self):
         self.leftFrame.pack(side=tk.LEFT, expand=True)
+        self.scrollbar.pack(side=RIGHT, fill='y')
+        self.scrollbar.config(command=self.textWindow.yview)
         self.textWindow.pack()
+        
 
         self.dsCBLabel.pack(pady=(10,5))
         self.dsComboBox.pack(pady=(0,10))
@@ -151,10 +216,11 @@ class View:
         self.epochsLabel.grid(row=0, column=0)
         self.epochsSpinbox.grid(row=0, column=1)
         self.batchSizeLabel.grid(row=1, column=0)
-        self.bachSizeSpinbox.grid(row=1, column=1)
-        self.trainLossCheckbox.pack()
-        self.trainAccCheckbox.pack()
-        self.trainModelButton.pack(pady=10)
+        self.batchSizeSpinbox.grid(row=1, column=1)
+
+        self.trainModelButton.pack(pady=5)
+        self.testModelButton.pack(pady=5)
+
 
         
 
