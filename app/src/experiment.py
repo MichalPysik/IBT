@@ -1,6 +1,7 @@
+import numpy as np
 from dataset import Dataset
 from architectures import create_network
-import numpy as np
+
 
 
 class Experiment:
@@ -9,15 +10,16 @@ class Experiment:
             "\n\n*****************************************************************\n\n"
         )
         if not any(selected_networks):
-            print("Please select at least one neural network, then select the experiment again.")
+            print(
+                "Error: Please select at least one model, then select the experiment again!"
+            )
             return
         print("Preparing the dataset for the", data_type, "experiment...")
         self.data_type = data_type
         self.dataset = Dataset(data_type)
-        print("Creating selected neural networks...\n")
+        print("Creating selected models...\n")
         self.networks = self.create_networks(data_type, selected_networks)
-        print("All selected neural networks have been successfully created.\n")
-        self.finished_epochs = 0
+        print("All selected models have been successfully created.\n")
 
     def create_networks(self, data_type, selected_networks):
         networks = []

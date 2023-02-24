@@ -1,10 +1,14 @@
-from keras import Sequential
-import keras.layers as layers
+from tensorflow.keras import Sequential, layers
 
 architecture_names = {
     "Tabular": ["Tabular_MLP", "Tabular_CNN", "Tabular_RNN", "Tabular_MLPx"],
     "Image": ["Image_MLP", "Image_CNN", "Image_RNN", "Image_CNNx"],
-    "Sequential": ["Sequential_MLP", "Sequential_CNN", "Sequential_RNN", "Sequential_RNNx"]
+    "Sequential": [
+        "Sequential_MLP",
+        "Sequential_CNN",
+        "Sequential_RNN",
+        "Sequential_RNNx",
+    ],
 }
 
 # for each data type, networks with ids 0, 1, 2 are MLP, CNN, RNN
@@ -125,7 +129,7 @@ def create_network(
             model.add(layers.Flatten())
             model.add(layers.Dense(128, activation="relu"))
 
-    else: # data_type == "Sequential"
+    else:  # data_type == "Sequential"
         # https://github.com/CSCfi/machine-learning-scripts/blob/master/notebooks/keras-imdb-mlp.ipynb
         if network_id == 0:  # Sequential_MLP
             model._name = "Sequential_MLP"

@@ -1,5 +1,4 @@
 import tkinter as tk
-import sys
 import utils as ut
 import view
 
@@ -20,10 +19,8 @@ if __name__ == "__main__":
     view = view.View(root)
     view.setup()
 
-    # textbox = tk.Text(root, width=60)
-    # sys.stdout = TextRedirector(textbox)
-    # root.geometry('900x800')
-    # root.configure(bg='#606060')
+    root.option_add('*Dialog.msg.width', 34)
+    root.option_add("*Dialog.msg.wrapLength", "6i")
     root.geometry("%sx%s" % (ut.window_width, ut.window_height))
-    root.title("Neural Network Keras")
+    root.title("Neural network comparison")
     root.mainloop()

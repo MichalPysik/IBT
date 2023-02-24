@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
+from tensorflow.keras.datasets import fashion_mnist, imdb
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
-from keras.datasets import fashion_mnist, imdb
-from keras.utils import to_categorical
 from utils import vectorize_sequences
-from keras_preprocessing.sequence import pad_sequences
 
 
 class Dataset:
@@ -51,8 +51,12 @@ class Dataset:
                 - min(np.min(self.y_test), np.min(self.y_train))
                 + 1
             )
-            self.X_train_vectorized = vectorize_sequences(X_train, dimension=self.top_words)
-            self.X_test_vectorized = vectorize_sequences(X_test, dimension=self.top_words)
+            self.X_train_vectorized = vectorize_sequences(
+                X_train, dimension=self.top_words
+            )
+            self.X_test_vectorized = vectorize_sequences(
+                X_test, dimension=self.top_words
+            )
             self.vectorized_sample_shape = self.X_train_vectorized.shape[1:]
             self.X_train_padded = pad_sequences(X_train, maxlen=self.max_review_len)
             self.X_test_padded = pad_sequences(X_test, maxlen=self.max_review_len)
