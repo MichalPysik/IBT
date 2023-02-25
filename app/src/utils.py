@@ -1,13 +1,19 @@
 import numpy as np
 import tensorflow as tf
+import time
 from keras import callbacks, metrics
+import matplotlib.pyplot as plt
+from architectures import architecture_names
 
-# Global variables and some utility functions
+# Config variables, Keras callbacks, and utility functions
 
 window_width = 1600
 window_height = 900
 
 saved_weights_path = "saved_weights"
+plots_path = "plots"
+
+plot_colors = ["red", "orange", "green", "blue"]
 
 ask_change_experiment_text = (
     "Do you really want to change the experiment?\nAll unsaved model weights will be lost.\n"
@@ -54,10 +60,8 @@ class TrainProgressCallback(callbacks.Callback):
             + "  val_loss: "
             + str(logs["val_loss"])
         )
-        metrics = logs
-        metrics.pop("loss", "val_loss")
-        for metric in metrics.keys():
-            if metric.startswith(("val_", "f1_")):
+        for metric in logs.keys():
+            if metric.startswith(("val_", "f1_")) or metric == "loss":
                 continue
             print(metric + ": " + str(logs[metric]), end="  ")
             if self.valid:
@@ -70,7 +74,7 @@ class TrainProgressCallback(callbacks.Callback):
                 print("val_f1_score: " + str(val_f1_score))
         except KeyError:
             pass
-        print("" if self.valid else "\n")
+        print("" if self.valid or len(logs.keys()) <= 2 else "\n")
         
     def on_train_end(self, logs=None):
         print("Training of " + self.name + " has finished.\n")
@@ -94,3 +98,32 @@ class TestProgressCallback(callbacks.Callback):
         except KeyError:
             pass
         print("") # New line
+
+def plot_graphs(histories, selected_plots, data_type):
+    first = histories.index(next(filter(lambda x: x is not None, histories))) # index of first non-empty history
+    for metric in histories[first].history.keys():
+        if metric.startswith(("f1_", "val_f1_")):
+            continue
+        elif metric == "loss" and not selected_plots["loss"]:
+            continue
+        elif metric == "val_loss" and not selected_plots["val_loss"]:
+            continue
+        elif metric.startswith("val_") and metric != "val_loss" and not selected_plots["val_metrics"]:
+            continue
+        elif not selected_plots["metrics"] and metric != "loss" and not metric.startswith("val_"):
+            continue
+        network_id = 0
+        plt.figure(figsize=(16, 12))
+        plt.title(data_type + "_" + metric)
+        plt.xlabel("epochs")
+        plt.ylabel(metric)
+        for i in range(len(histories)):
+            if histories[i] == None:
+                network_id += 1
+                continue
+            plt.plot(histories[i].epoch, histories[i].history[metric], color=plot_colors[network_id], label=architecture_names[data_type][network_id])
+            network_id += 1
+        plt.legend()
+        plt.savefig(plots_path + "/" + data_type + "/" + metric + "_" + time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
+        plt.close()
+    print("finished")

@@ -31,6 +31,12 @@ class View:
         self.selected_networks = []
         self.metrics = []
         self.val_metrics = False
+        self.selected_plots = {
+            "loss": False,
+            "val_loss": False,
+            "metrics": False,
+            "val_metrics": False,
+        }
 
     def setup(self):
         self.create_widgets()
@@ -63,6 +69,12 @@ class View:
         if self.f1scoreVar.get():
             self.metrics.append(metrics.Precision(name="f1_precision"))
             self.metrics.append(metrics.Recall(name="f1_recall"))
+
+    def update_selected_plots(self):
+        self.selected_plots["loss"] = self.plotLossVar.get()
+        self.selected_plots["val_loss"] = self.plotValidationLossVar.get()
+        self.selected_plots["metrics"] = self.plotMetricsVar.get()
+        self.selected_plots["val_metrics"] = self.plotValidationMetricsVar.get()
 
     def create_widgets(self):
         self.menubar = tk.Menu(self.container)
@@ -216,7 +228,7 @@ class View:
         )
 
     def help_callback(self, event=None):
-        print("This is help")
+        print(ut.help_text)
 
     def save_screen_callback(self, event=None):
         initialfile = "log.txt"
@@ -275,55 +287,62 @@ class View:
             else "categorical_crossentropy"
         )
         optimizer = "rmsprop" if self.experiment.data_type == "Sequential" else "adam"
+        histories = []
         for i in range(len(selected_networks)):
-            if selected_networks[i]:
-                if self.experiment.data_type == "Sequential":
-                    if not i:
-                        X_train, X_test = (
-                            self.experiment.dataset.X_train_vectorized,
-                            self.experiment.dataset.X_test_vectorized,
-                        )
-                    else:
-                        X_train, X_test = (
-                            self.experiment.dataset.X_train_padded,
-                            self.experiment.dataset.X_test_padded,
-                        )
+            if not selected_networks[i]:
+                histories.append(None)
+                continue
+            if self.experiment.data_type == "Sequential":
+                if not i:
+                    X_train, X_test = (
+                        self.experiment.dataset.X_train_vectorized,
+                        self.experiment.dataset.X_test_vectorized,
+                    )
                 else:
                     X_train, X_test = (
-                        self.experiment.dataset.X_train,
-                        self.experiment.dataset.X_test,
+                        self.experiment.dataset.X_train_padded,
+                        self.experiment.dataset.X_test_padded,
                     )
-                if not self.experiment.networks[i]:
-                    input_shape = (
-                        self.experiment.dataset.vectorized_sample_shape
-                        if not i and self.experiment.data_type == "Sequential"
-                        else self.experiment.dataset.padded_sample_shape
-                        if self.experiment.data_type == "Sequential"
-                        else self.experiment.dataset.sample_shape
-                    )
-                    self.experiment.networks[i] = create_network(
-                        self.experiment.data_type,
-                        i,
-                        input_shape=input_shape,
-                        num_classes=self.experiment.dataset.num_classes,
-                        show_summary=False,
-                    )
-                self.experiment.networks[i].compile(
-                    loss=loss_fn, optimizer=optimizer, metrics=self.metrics
+            else:
+                X_train, X_test = (
+                    self.experiment.dataset.X_train,
+                    self.experiment.dataset.X_test,
                 )
-                history = self.experiment.networks[i].fit(
-                    X_train,
-                    self.experiment.dataset.y_train,
-                    batch_size=batch_size,
-                    epochs=epochs,
-                    validation_data=(X_test, self.experiment.dataset.y_test),
-                    callbacks=[
-                        ut.TrainProgressCallback(
-                            epochs, self.experiment.networks[i].name, self.val_metrics
-                        )
-                    ],
-                    verbose=0,
+            if not self.experiment.networks[i]:
+                input_shape = (
+                    self.experiment.dataset.vectorized_sample_shape
+                    if not i and self.experiment.data_type == "Sequential"
+                    else self.experiment.dataset.padded_sample_shape
+                    if self.experiment.data_type == "Sequential"
+                    else self.experiment.dataset.sample_shape
                 )
+                self.experiment.networks[i] = create_network(
+                    self.experiment.data_type,
+                    i,
+                    input_shape=input_shape,
+                    num_classes=self.experiment.dataset.num_classes,
+                    show_summary=False,
+                )
+            self.experiment.networks[i].compile(
+                loss=loss_fn, optimizer=optimizer, metrics=self.metrics
+            )
+            history = self.experiment.networks[i].fit(
+                X_train,
+                self.experiment.dataset.y_train,
+                batch_size=batch_size,
+                epochs=epochs,
+                validation_data=(X_test, self.experiment.dataset.y_test),
+                callbacks=[
+                    ut.TrainProgressCallback(
+                        epochs, self.experiment.networks[i].name, self.val_metrics
+                    )
+                ],
+                verbose=0,
+            )
+            histories.append(history)
+        self.update_selected_plots()
+        if any(self.selected_plots):
+            ut.plot_graphs(histories, self.selected_plots, self.experiment.data_type)
 
     def test_models_callback(self, event=None):
         try:
@@ -347,41 +366,42 @@ class View:
         )
         optimizer = "rmsprop" if self.experiment.data_type == "Sequential" else "adam"
         for i in range(len(self.selected_networks)):
-            if self.selected_networks[i]:
-                if self.experiment.data_type == "Sequential":
-                    if not i:
-                        X_test = self.experiment.dataset.X_test_vectorized
-                    else:
-                        X_test = self.experiment.dataset.X_test_padded
+            if not self.selected_networks[i]:
+                continue
+            if self.experiment.data_type == "Sequential":
+                if not i:
+                    X_test = self.experiment.dataset.X_test_vectorized
                 else:
-                    X_test = self.experiment.dataset.X_test
-                if not self.experiment.networks[i]:
-                    input_shape = (
-                        self.experiment.dataset.vectorized_sample_shape
-                        if not i and self.experiment.data_type == "Sequential"
-                        else self.experiment.dataset.padded_sample_shape
-                        if self.experiment.data_type == "Sequential"
-                        else self.experiment.dataset.sample_shape
-                    )
-                    self.experiment.networks[i] = create_network(
-                        self.experiment.data_type,
-                        i,
-                        input_shape=input_shape,
-                        num_classes=self.experiment.dataset.num_classes,
-                        show_summary=False,
-                    )
-                self.experiment.networks[i].compile(
-                    loss=loss_fn, optimizer=optimizer, metrics=self.metrics
+                    X_test = self.experiment.dataset.X_test_padded
+            else:
+                X_test = self.experiment.dataset.X_test
+            if not self.experiment.networks[i]:
+                input_shape = (
+                    self.experiment.dataset.vectorized_sample_shape
+                    if not i and self.experiment.data_type == "Sequential"
+                    else self.experiment.dataset.padded_sample_shape
+                    if self.experiment.data_type == "Sequential"
+                    else self.experiment.dataset.sample_shape
                 )
-                self.experiment.networks[i].evaluate(
-                    X_test,
-                    self.experiment.dataset.y_test,
-                    batch_size=batch_size,
-                    callbacks=[
-                        ut.TestProgressCallback(self.experiment.networks[i].name)
-                    ],
-                    verbose=0,
+                self.experiment.networks[i] = create_network(
+                    self.experiment.data_type,
+                    i,
+                    input_shape=input_shape,
+                    num_classes=self.experiment.dataset.num_classes,
+                    show_summary=False,
                 )
+            self.experiment.networks[i].compile(
+                loss=loss_fn, optimizer=optimizer, metrics=self.metrics
+            )
+            self.experiment.networks[i].evaluate(
+                X_test,
+                self.experiment.dataset.y_test,
+                batch_size=batch_size,
+                callbacks=[
+                    ut.TestProgressCallback(self.experiment.networks[i].name)
+                ],
+                verbose=0,
+            )
 
     def dsComboBox_callback(self, event=None):
         self.update_selected_networks()
