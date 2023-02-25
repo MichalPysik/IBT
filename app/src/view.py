@@ -93,6 +93,7 @@ class View:
         self.screenbar.add_command(label="Clear", command=self.clear_screen_callback)
         self.menubar.add_cascade(label="Screen", menu=self.screenbar)
         self.menubar.add_command(label="Help", command=self.help_callback)
+
         self.container.bind("<Control-o>", lambda event: self.load_models_callback())
         self.container.bind("<Control-O>", lambda event: self.load_models_callback())
         self.container.bind("<Control-s>", lambda event: self.save_models_callback())
@@ -223,6 +224,10 @@ class View:
         self.trainModelButton = tk.Button(
             self.leftFrame, text="Train models", command=self.train_models_callback
         )
+        self.confMatrixVar = tk.BooleanVar(value=False)
+        self.confMatrixCheckbox = tk.Checkbutton(
+            self.leftFrame, variable=self.confMatrixVar, text="Confusion matrix"
+        )
         self.testModelButton = tk.Button(
             self.leftFrame, text="Test models", command=self.test_models_callback
         )
@@ -271,16 +276,13 @@ class View:
                 "Error: You have to select a dataset before training selected models!"
             )
             return
-        selected_networks = [
-            self.network0Var.get(),
-            self.network1Var.get(),
-            self.network2Var.get(),
-            self.network3Var.get(),
-        ]
-        if not any(selected_networks):
+
+        self.update_selected_networks()
+        if not any(self.selected_networks):
             print("Error: You have to select at least one model to train!")
             return
         self.update_selected_metrics()
+
         loss_fn = (
             "binary_crossentropy"
             if self.experiment.dataset.num_classes == 2
@@ -288,10 +290,12 @@ class View:
         )
         optimizer = "rmsprop" if self.experiment.data_type == "Sequential" else "adam"
         histories = []
-        for i in range(len(selected_networks)):
-            if not selected_networks[i]:
+
+        for i in range(len(self.selected_networks)):
+            if not self.selected_networks[i]:
                 histories.append(None)
                 continue
+
             if self.experiment.data_type == "Sequential":
                 if not i:
                     X_train, X_test = (
@@ -308,6 +312,7 @@ class View:
                     self.experiment.dataset.X_train,
                     self.experiment.dataset.X_test,
                 )
+
             if not self.experiment.networks[i]:
                 input_shape = (
                     self.experiment.dataset.vectorized_sample_shape
@@ -323,6 +328,7 @@ class View:
                     num_classes=self.experiment.dataset.num_classes,
                     show_summary=False,
                 )
+
             self.experiment.networks[i].compile(
                 loss=loss_fn, optimizer=optimizer, metrics=self.metrics
             )
@@ -340,6 +346,7 @@ class View:
                 verbose=0,
             )
             histories.append(history)
+
         self.update_selected_plots()
         if any(self.selected_plots):
             ut.plot_graphs(histories, self.selected_plots, self.experiment.data_type)
@@ -358,6 +365,7 @@ class View:
         if not any(self.selected_networks):
             print("Error: You have to select at least one model to test!")
             return
+
         self.update_selected_metrics()
         loss_fn = (
             "binary_crossentropy"
@@ -365,16 +373,18 @@ class View:
             else "categorical_crossentropy"
         )
         optimizer = "rmsprop" if self.experiment.data_type == "Sequential" else "adam"
+
         for i in range(len(self.selected_networks)):
             if not self.selected_networks[i]:
                 continue
             if self.experiment.data_type == "Sequential":
-                if not i:
+                if i == 0: # MLP - vectorized
                     X_test = self.experiment.dataset.X_test_vectorized
                 else:
                     X_test = self.experiment.dataset.X_test_padded
             else:
                 X_test = self.experiment.dataset.X_test
+
             if not self.experiment.networks[i]:
                 input_shape = (
                     self.experiment.dataset.vectorized_sample_shape
@@ -390,6 +400,7 @@ class View:
                     num_classes=self.experiment.dataset.num_classes,
                     show_summary=False,
                 )
+
             self.experiment.networks[i].compile(
                 loss=loss_fn, optimizer=optimizer, metrics=self.metrics
             )
@@ -397,11 +408,14 @@ class View:
                 X_test,
                 self.experiment.dataset.y_test,
                 batch_size=batch_size,
-                callbacks=[
-                    ut.TestProgressCallback(self.experiment.networks[i].name)
-                ],
+                callbacks=[ut.TestCallback(self.experiment.networks[i].name)],
                 verbose=0,
             )
+
+            if self.confMatrixVar.get():
+                y_pred = self.experiment.networks[i].predict(X_test, verbose=0)
+                ut.plot_conf_matrix(self.experiment.dataset.y_test, y_pred, self.experiment.data_type, self.experiment.dataset.num_classes, i)
+
 
     def dsComboBox_callback(self, event=None):
         self.update_selected_networks()
@@ -427,6 +441,7 @@ class View:
             icon=messagebox.WARNING,
         ):
             return
+
         self.update_selected_networks()
         saved = []
         for i in range(len(self.selected_networks)):
@@ -448,6 +463,7 @@ class View:
                     + architecture_names[self.experiment.data_type][i]
                     + " as it hasn't been initialized yet."
                 )
+
         print(
             "The current weights of "
             + ", ".join([name for name in saved])
@@ -470,6 +486,7 @@ class View:
             icon=messagebox.WARNING,
         ):
             return
+
         self.update_selected_networks()
         loaded = []
         for i in range(len(self.selected_networks)):
@@ -506,6 +523,7 @@ class View:
                     + architecture_names[self.experiment.data_type][i]
                     + " as no savefile had been found."
                 )
+
         print(
             "The saved weights of "
             + ", ".join([name for name in loaded])
@@ -559,3 +577,4 @@ class View:
 
         self.trainModelButton.pack(pady=(0, 20))
         self.testModelButton.pack(pady=(0, 10))
+        self.confMatrixCheckbox.pack(pady=(0, 10))

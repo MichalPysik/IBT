@@ -19,8 +19,8 @@ if __name__ == "__main__":
     view = view.View(root)
     view.setup()
 
-    root.option_add('*Dialog.msg.width', 34)
+    root.option_add("*Dialog.msg.width", 34)
     root.option_add("*Dialog.msg.wrapLength", "6i")
     root.geometry("%sx%s" % (ut.window_width, ut.window_height))
-    root.title("Neural network comparison")
+    root.title("Neural network comparison with Keras")
     root.mainloop()

@@ -36,7 +36,6 @@ class Dataset:
             )
             self.y_train = to_categorical(y_train, num_classes=self.num_classes)
             self.y_test = to_categorical(y_test, num_classes=self.num_classes)
-
             self.sample_shape = self.X_train.shape[1:]
 
         else:  # data_type == Sequential

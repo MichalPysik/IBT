@@ -3,7 +3,6 @@ from dataset import Dataset
 from architectures import create_network
 
 
-
 class Experiment:
     def __init__(self, data_type, selected_networks):
         print(
