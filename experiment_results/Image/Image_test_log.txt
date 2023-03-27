@@ -1,0 +1,22 @@
+The saved weights of Image_MLP, Image_CNN, Image_RNN, Image_CNNx have been loaded from 'saved_weights/Image'.
+
+Starting testing of Image_MLP...
+loss: 0.42950424551963806
+accuracy: 0.8910999894142151
+
+
+Starting testing of Image_CNN...
+loss: 0.24873138964176178
+accuracy: 0.9031500220298767
+
+
+Starting testing of Image_RNN...
+loss: 0.4635857343673706
+accuracy: 0.8995000123977661
+
+
+Starting testing of Image_CNNx...
+loss: 2.961676597595215
+accuracy: 0.9015499949455261
+
+
