@@ -134,23 +134,23 @@ def create_network(
         if network_id == 0:  # Sequential_MLP
             model._name = "Sequential_MLP"
             model.add(layers.Flatten(input_shape=input_shape))
-            model.add(layers.Dropout(0.4))
+            model.add(layers.Dropout(0.35))
             model.add(layers.Dense(36, activation="relu"))
-            model.add(layers.Dropout(0.4))
+            model.add(layers.Dropout(0.35))
             model.add(layers.Dense(36, activation="relu"))
-            model.add(layers.Dropout(0.4))
+            model.add(layers.Dropout(0.35))
 
         # https://bagheri365.github.io/blog/Sentiment-Analysis-of-IMDB-Movie-Reviews-using-Convolutional-Neural-Network-(CNN)-with-Hyperparameters-Tuning/
         elif network_id == 1:  # Sequential_CNN
             model._name = "Sequential_CNN"
             model.add(layers.Embedding(top_words, 32, input_length=max_review_len))
-            model.add(layers.Dropout(0.4))
+            model.add(layers.Dropout(0.5))
             model.add(
                 layers.Conv1D(64, kernel_size=3, padding="same", activation="relu")
             )
             model.add(layers.GlobalMaxPooling1D())
             model.add(layers.Dense(256, activation="relu"))
-            model.add(layers.Dropout(0.4))
+            model.add(layers.Dropout(0.5))
 
         elif network_id == 2:  # Sequential_RNN
             model._name = "Sequential_RNN"
@@ -158,8 +158,8 @@ def create_network(
             model.add(
                 layers.Embedding(top_words, embed_vec_len, input_length=max_review_len)
             )
-            model.add(layers.LSTM(100, dropout=0.3))
-            model.add(layers.Dropout(0.3))
+            model.add(layers.LSTM(100, dropout=0.75))
+            model.add(layers.Dropout(0.75))
 
         else:  # Sequential_RNNx
             model._name = "Sequential_RNNx"
@@ -167,11 +167,11 @@ def create_network(
             model.add(
                 layers.Embedding(top_words, embed_vec_len, input_length=max_review_len)
             )
-            model.add(layers.LSTM(80, dropout=0.3, return_sequences=True))
-            model.add(layers.LSTM(40, dropout=0.2))
-            model.add(layers.Dropout(0.2))
+            model.add(layers.LSTM(80, dropout=0.75, return_sequences=True))
+            model.add(layers.LSTM(40, dropout=0.75))
+            model.add(layers.Dropout(0.75))
             model.add(layers.Dense(40, activation="relu"))
-            model.add(layers.Dropout(0.3))
+            model.add(layers.Dropout(0.75))
 
     if num_classes > 2:
         model.add(layers.Dense(num_classes))
