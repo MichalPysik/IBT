@@ -1,3 +1,8 @@
+# Project: Classification with Use of Neural Networks in the Keras Environment
+# Application: Experimental application for neural network comparison with use of Keras
+# Author: Michal Pyšík
+# File: dataset.py
+
 import numpy as np
 import pandas as pd
 from tensorflow.keras.datasets import fashion_mnist, imdb
@@ -7,7 +12,10 @@ from sklearn.model_selection import train_test_split
 from utils import vectorize_sequences
 
 
+# Class encapsulating the selected dataset
 class Dataset:
+    # Loads a dataset based on the given data type, splits it into training and testing sets,
+    # and preprocesses the data
     def __init__(self, data_type):
         if data_type == "Tabular":
             self.name = "MiniBooNE particle identification"

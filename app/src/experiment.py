@@ -1,9 +1,17 @@
+# Project: Classification with Use of Neural Networks in the Keras Environment
+# Application: Experimental application for neural network comparison with use of Keras
+# Author: Michal Pyšík
+# File: experiment.py
+
 import numpy as np
 from dataset import Dataset
 from architectures import create_network
 
 
+# Class encapsulating the selected experiment
 class Experiment:
+    # Prepares the experiment selected by the given data type
+    # Creates the selected models and prepares the given dataset
     def __init__(self, data_type, selected_networks):
         print(
             "\n\n*****************************************************************\n\n"
@@ -20,6 +28,7 @@ class Experiment:
         self.networks = self.create_networks(data_type, selected_networks)
         print("All selected models have been successfully created.\n")
 
+    # Creates the selected models based on the given data type
     def create_networks(self, data_type, selected_networks):
         networks = []
 

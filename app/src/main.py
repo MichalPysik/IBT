@@ -1,19 +1,14 @@
+# Project: Classification with Use of Neural Networks in the Keras Environment
+# Application: Experimental application for neural network comparison with use of Keras
+# Author: Michal Pyšík
+# File: main.py
+
 import tkinter as tk
 import utils as ut
 import view
 
 
-class TextRedirector(object):
-    def __init__(self, widget, tag="stdout"):
-        self.widget = widget
-        self.tag = tag
-
-    def write(self, str):
-        self.widget.configure(state="normal")
-        self.widget.insert("end", str, (self.tag,))
-        self.widget.configure(state="disabled")
-
-
+# Main function that runs the main loop of the application
 if __name__ == "__main__":
     root = tk.Tk()
     view = view.View(root)

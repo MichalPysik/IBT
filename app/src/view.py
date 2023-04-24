@@ -1,3 +1,8 @@
+# Project: Classification with Use of Neural Networks in the Keras Environment
+# Application: Experimental application for neural network comparison with use of Keras
+# Author: Michal Pyšík
+# File: view.py
+
 import tkinter as tk
 from tkinter import RIGHT, ttk, messagebox, filedialog
 from tkinter.constants import HORIZONTAL, UNITS, VERTICAL
@@ -8,6 +13,7 @@ from architectures import create_network, architecture_names
 from tensorflow.keras import metrics
 
 
+# Redirects a stream (stdout) to a given text widget, handles the widget for writing
 # https://stackoverflow.com/questions/18517084/how-to-redirect-stdout-to-a-tkinter-text-widget
 class StdoutRedirector(object):
     def __init__(self, text_widget):
@@ -24,7 +30,9 @@ class StdoutRedirector(object):
         pass
 
 
+# Class encapsulating the graphical user interface
 class View:
+    # Initiates the GUI, including the initial context
     def __init__(self, parent):
         self.container = parent
         self.experiment = None
@@ -38,10 +46,12 @@ class View:
             "val_metrics": False,
         }
 
+    # Creates and sets up all the widgets used in the GUI
     def setup(self):
         self.create_widgets()
         self.setup_layout()
 
+    # Updates the array of selected networks based on the checkboxes
     def update_selected_networks(self):
         self.selected_networks = [
             self.network0Var.get(),
@@ -50,6 +60,7 @@ class View:
             self.network3Var.get(),
         ]
 
+    # Updates the array of selected metrics based on the checkboxes
     def update_selected_metrics(self):
         self.metrics = []
         if self.accuracyVar.get():
@@ -70,13 +81,17 @@ class View:
             self.metrics.append(metrics.Precision(name="f1_precision"))
             self.metrics.append(metrics.Recall(name="f1_recall"))
 
+    # Updates the dictionary of selected plots based on the checkboxes
     def update_selected_plots(self):
         self.selected_plots["loss"] = self.plotLossVar.get()
         self.selected_plots["val_loss"] = self.plotValidationLossVar.get()
         self.selected_plots["metrics"] = self.plotMetricsVar.get()
         self.selected_plots["val_metrics"] = self.plotValidationMetricsVar.get()
 
+    # Creates the widgets used in the GUI
     def create_widgets(self):
+        # Top bar containing options for saving/loading weights,
+        # handling the screen, and printing help
         self.menubar = tk.Menu(self.container)
         self.modelmenu = tk.Menu(self.menubar, tearoff=0)
         self.modelmenu.add_command(
@@ -94,6 +109,7 @@ class View:
         self.menubar.add_cascade(label="Screen", menu=self.screenbar)
         self.menubar.add_command(label="Help", command=self.help_callback)
 
+        # Keyboard shortcuts binding
         self.container.bind("<Control-o>", lambda event: self.load_models_callback())
         self.container.bind("<Control-O>", lambda event: self.load_models_callback())
         self.container.bind("<Control-s>", lambda event: self.save_models_callback())
@@ -104,6 +120,7 @@ class View:
         self.container.bind("<Control-L>", lambda event: self.clear_screen_callback())
         self.container.config(menu=self.menubar)
 
+        # The left frame for most of the user input and the main text window
         self.leftFrame = tk.Frame(self.container)
         self.scrollbar = tk.Scrollbar(self.container, orient="vertical")
         self.textWindow = tk.Text(
@@ -117,6 +134,7 @@ class View:
         )
         sys.stdout = StdoutRedirector(self.textWindow)
 
+        # ComboBox for selecting the current experiment
         self.dsCBLabel = ttk.Label(self.leftFrame, text="Selected experiment")
         self.dsSelected = tk.StringVar(value="Click here to select")
         self.dsComboBox = ttk.Combobox(
@@ -128,6 +146,7 @@ class View:
         self.dsComboBox["values"] = ("Tabular", "Image", "Sequential")
         self.dsComboBox.bind("<<ComboboxSelected>>", self.dsComboBox_callback)
 
+        # Checkboxes for selecting the active networks/models
         self.selectNetworksLabel = ttk.Label(self.leftFrame, text="Selected models")
         self.selectNetworksFrame = tk.Frame(self.leftFrame)
         self.network0Var = tk.BooleanVar(value=True)
@@ -147,6 +166,7 @@ class View:
             self.selectNetworksFrame, variable=self.network3Var, text="Extra"
         )
 
+        # The frame containing checkboxes for selecting the active training metrics
         self.metricsFrame = tk.Frame(self.leftFrame, borderwidth=2, relief="sunken")
         self.metricsLabel = ttk.Label(self.metricsFrame, text="Metrics")
         self.accuracyVar = tk.BooleanVar(value=True)
@@ -178,6 +198,7 @@ class View:
             self.metricsFrame, variable=self.f1scoreVar, text="F1 score"
         )
 
+        # The frame containing checkboxes for selecting the training plots
         self.plotsFrame = tk.Frame(self.leftFrame, borderwidth=2, relief="raised")
         self.plotsLabel = ttk.Label(self.plotsFrame, text="Plots")
         self.plotLossVar = tk.BooleanVar(value=False)
@@ -197,6 +218,7 @@ class View:
             self.plotsFrame, variable=self.plotValidationMetricsVar, text="valid."
         )
 
+        # Spinboxes for selecting the number of epochs and batch size
         self.epochsBatchFrame = tk.Frame(self.leftFrame)
         self.epochsLabel = tk.Label(
             self.epochsBatchFrame, text="Epochs:", anchor="e", width=11
@@ -221,6 +243,7 @@ class View:
             textvariable=self.batchSizeVar,
         )
 
+        # Buttons for training and testing the selected models, checkbox for plotting the confusion matrices
         self.trainModelButton = tk.Button(
             self.leftFrame, text="Train models", command=self.train_models_callback
         )
@@ -232,9 +255,11 @@ class View:
             self.leftFrame, text="Test models", command=self.test_models_callback
         )
 
+    # Callback that prints the help text
     def help_callback(self, event=None):
         print(ut.help_text)
 
+    # Callback for saving the current weights of the selected models
     def save_screen_callback(self, event=None):
         initialfile = "log.txt"
         if self.experiment:
@@ -249,6 +274,7 @@ class View:
             with open(filename, "w") as f:
                 f.write(self.textWindow.get("1.0", "end"))
 
+    # Callback that clears all current text in the main text window
     def clear_screen_callback(self, event=None):
         if not messagebox.askyesno("Clear screen", ut.clear_screen_text):
             return
@@ -256,6 +282,7 @@ class View:
         self.textWindow.delete("1.0", "end")
         self.textWindow.config(state="disabled")
 
+    # Callback for training the selected models
     def train_models_callback(self, event=None):
         try:
             epochs = int(self.epochsVar.get())
@@ -351,6 +378,7 @@ class View:
         if any(self.selected_plots):
             ut.plot_graphs(histories, self.selected_plots, self.experiment.data_type)
 
+    # Callback for testing the selected models
     def test_models_callback(self, event=None):
         try:
             batch_size = int(self.batchSizeVar.get())
@@ -378,7 +406,7 @@ class View:
             if not self.selected_networks[i]:
                 continue
             if self.experiment.data_type == "Sequential":
-                if i == 0: # MLP - vectorized
+                if i == 0:  # MLP - vectorized
                     X_test = self.experiment.dataset.X_test_vectorized
                 else:
                     X_test = self.experiment.dataset.X_test_padded
@@ -414,9 +442,15 @@ class View:
 
             if self.confMatrixVar.get():
                 y_pred = self.experiment.networks[i].predict(X_test, verbose=0)
-                ut.plot_conf_matrix(self.experiment.dataset.y_test, y_pred, self.experiment.data_type, self.experiment.dataset.num_classes, i)
+                ut.plot_conf_matrix(
+                    self.experiment.dataset.y_test,
+                    y_pred,
+                    self.experiment.data_type,
+                    self.experiment.dataset.num_classes,
+                    i,
+                )
 
-
+    # Callback for chaning the current experiment along with the whole context
     def dsComboBox_callback(self, event=None):
         self.update_selected_networks()
         if self.experiment:
@@ -429,6 +463,7 @@ class View:
                 return
         self.experiment = Experiment(self.dsSelected.get(), self.selected_networks)
 
+    # Callback for saving the weights of the selected models
     def save_models_callback(self, event=None):
         if not self.experiment:
             print(
@@ -474,6 +509,7 @@ class View:
             + "'."
         )
 
+    # Callback for loading the weights of the selected models
     def load_models_callback(self, event=None):
         if not self.experiment:
             print(
@@ -534,15 +570,19 @@ class View:
             + "'."
         )
 
+    # Sets up the layout of the GUI (widgets, frames, etc.)
     def setup_layout(self):
+        # Overall layout
         self.leftFrame.pack(side=tk.LEFT, expand=True)
         self.scrollbar.pack(side=RIGHT, fill="y")
         self.scrollbar.config(command=self.textWindow.yview)
         self.textWindow.pack()
 
+        # Dataset selection
         self.dsCBLabel.pack(pady=(10, 5))
         self.dsComboBox.pack(padx=10, pady=(0, 40))
 
+        # Network selection
         self.selectNetworksLabel.pack(pady=(0, 5))
         self.selectNetworksFrame.pack(pady=(0, 40))
         self.network0Checkbox.grid(row=0, column=0, pady=0)
@@ -550,6 +590,7 @@ class View:
         self.network2Checkbox.grid(row=0, column=2, pady=0)
         self.network3Checkbox.grid(row=1, column=1, pady=(4, 0))
 
+        # Metrics selection
         self.metricsFrame.pack(pady=(0, 20))
         self.metricsLabel.grid(row=0, column=0, pady=(5, 10))
         self.accuracyCheckbox.grid(row=1, column=0, sticky="w", pady=(0, 5))
@@ -560,6 +601,7 @@ class View:
         self.f1scoreCheckbox.grid(row=6, column=0, sticky="w", pady=(0, 10))
         self.metricsValidationCheckbox.grid(row=7, column=0, sticky="w", pady=(0, 5))
 
+        # Training plots selection
         self.plotsFrame.pack(pady=(0, 40))
         self.plotsLabel.grid(row=0, column=0, columnspan=2, pady=(5, 5))
         self.plotLossCheckbox.grid(row=1, column=0, sticky="w", pady=(0, 5))
@@ -569,12 +611,14 @@ class View:
             row=2, column=1, sticky="w", pady=(0, 5)
         )
 
+        # Epochs and batch size selection
         self.epochsBatchFrame.pack(pady=(0, 20))
         self.epochsLabel.grid(row=0, column=0, pady=(0, 10))
         self.epochsSpinbox.grid(row=0, column=1, pady=(0, 10))
         self.batchSizeLabel.grid(row=1, column=0, pady=(0, 0))
         self.batchSizeSpinbox.grid(row=1, column=1, pady=(0, 0))
 
+        # Training and testing buttons, confusion matrix checkbox (testing)
         self.trainModelButton.pack(pady=(0, 20))
         self.testModelButton.pack(pady=(0, 10))
         self.confMatrixCheckbox.pack(pady=(0, 10))

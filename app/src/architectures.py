@@ -1,5 +1,11 @@
+# Project: Classification with Use of Neural Networks in the Keras Environment
+# Application: Experimental application for neural network comparison with use of Keras
+# Author: Michal Pyšík
+# File: architectures.py
+
 from tensorflow.keras import Sequential, layers
 
+# Dictionary containing the names of the NN architectures
 architecture_names = {
     "Tabular": ["Tabular_MLP", "Tabular_CNN", "Tabular_RNN", "Tabular_MLPx"],
     "Image": ["Image_MLP", "Image_CNN", "Image_RNN", "Image_CNNx"],
@@ -11,8 +17,9 @@ architecture_names = {
     ],
 }
 
-# for each data type, networks with ids 0, 1, 2 are MLP, CNN, RNN
-# network with id 3 is always additional network based on the current data type (e.g. another CNN for image data)
+# Function that creates a given model and based on the given data type returns it
+# For each data type, networks with ids 0, 1, 2, 3 are MLP, CNN, RNN, {MLP, CNN, RNN}x respectively
+# show_summary dictates whether to print the Keras model summary to stdout
 def create_network(
     data_type,
     network_id,
@@ -130,7 +137,6 @@ def create_network(
             model.add(layers.Dense(128, activation="relu"))
 
     else:  # data_type == "Sequential"
-        # https://github.com/CSCfi/machine-learning-scripts/blob/master/notebooks/keras-imdb-mlp.ipynb
         if network_id == 0:  # Sequential_MLP
             model._name = "Sequential_MLP"
             model.add(layers.Flatten(input_shape=input_shape))
@@ -140,7 +146,6 @@ def create_network(
             model.add(layers.Dense(36, activation="relu"))
             model.add(layers.Dropout(0.35))
 
-        # https://bagheri365.github.io/blog/Sentiment-Analysis-of-IMDB-Movie-Reviews-using-Convolutional-Neural-Network-(CNN)-with-Hyperparameters-Tuning/
         elif network_id == 1:  # Sequential_CNN
             model._name = "Sequential_CNN"
             model.add(layers.Embedding(top_words, 32, input_length=max_review_len))

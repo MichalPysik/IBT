@@ -1,3 +1,8 @@
+# Project: Classification with Use of Neural Networks in the Keras Environment
+# Application: Experimental application for neural network comparison with use of Keras
+# Author: Michal Pyšík
+# File: utils.py
+
 import numpy as np
 import tensorflow as tf
 import time
@@ -46,6 +51,8 @@ fashion_mnist_labels = [
 ]
 imdb_review_labels = ["Negative", "Positive"]
 
+# Vectorizes the given sequences of samples (one-hot encoding)
+# Only used by Sequential_MLP by default
 def vectorize_sequences(sequences, dimension):
     results = np.zeros((len(sequences), dimension))
     for i, sequence in enumerate(sequences):
@@ -53,6 +60,7 @@ def vectorize_sequences(sequences, dimension):
     return results
 
 
+# Custom Keras callback for reporting training progress
 class TrainProgressCallback(callbacks.Callback):
     def __init__(self, epochs, name, valid):
         self.epochs = epochs
@@ -106,13 +114,14 @@ class TrainProgressCallback(callbacks.Callback):
                 print("val_f1_score: " + str(val_f1_score))
         except KeyError:
             pass
-        
+
         print("" if self.valid or len(logs.keys()) <= 2 else "\n")
 
     def on_train_end(self, logs=None):
         print("Training of " + self.name + " has finished.\n")
 
 
+# Custom Keras callback for reporting testing progress
 class TestCallback(callbacks.Callback):
     def __init__(self, name):
         self.name = name
@@ -143,6 +152,7 @@ class TestCallback(callbacks.Callback):
         print("")  # New line
 
 
+# Calculates the f1 score from its temporary metrics
 def transform_f1(history):
     for prefix in ["", "val_"]:
         precision = np.array(history.history[prefix + "f1_precision"])
@@ -157,6 +167,7 @@ def transform_f1(history):
     return history
 
 
+# Plots the selected training graphs after training
 def plot_graphs(histories, selected_plots, data_type):
     plt.rcParams.update({"font.size": 25})
     first = histories.index(
@@ -205,7 +216,7 @@ def plot_graphs(histories, selected_plots, data_type):
             network_id += 1
 
         plt.legend()
-        plt.grid(axis='both')
+        plt.grid(axis="both")
         plt.savefig(
             plots_path
             + "/"
@@ -220,6 +231,7 @@ def plot_graphs(histories, selected_plots, data_type):
         plt.close()
 
 
+# Plots the confusion matrix after testing
 def plot_conf_matrix(y_true, y_pred, data_type, num_classes, network_id):
     plt.rcParams.update({"font.size": 10})
     labels = [str(i) for i in range(num_classes)]
@@ -242,11 +254,15 @@ def plot_conf_matrix(y_true, y_pred, data_type, num_classes, network_id):
     plt.xticks(tick_marks, labels, rotation=rotation)
     plt.yticks(tick_marks, labels)
 
-    thresh = cm.max() / 2.
+    thresh = cm.max() / 2.0
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, cm[i, j],
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
+        plt.text(
+            j,
+            i,
+            cm[i, j],
+            horizontalalignment="center",
+            color="white" if cm[i, j] > thresh else "black",
+        )
 
     plt.tight_layout()
     plt.ylabel("True label")
@@ -264,6 +280,3 @@ def plot_conf_matrix(y_true, y_pred, data_type, num_classes, network_id):
         bbox_inches="tight",
     )
     plt.close()
-
-
-    
