@@ -36,7 +36,7 @@ ask_load_text = (
 clear_screen_text = (
     "Do you really want to clear the screen?\nAll current text will be lost.\n"
 )
-help_text = "This is a simple application for comparing neural networks.\n"
+help_text = open("instructions.txt", "r").read()
 fashion_mnist_labels = [
     "T-shirt/top",
     "Trouser",
