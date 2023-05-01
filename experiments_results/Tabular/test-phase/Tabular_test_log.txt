@@ -1,0 +1,38 @@
+The saved weights of Tabular_MLP, Tabular_CNN, Tabular_RNN, Tabular_MLPx have been loaded from 'saved_weights/Tabular'.
+
+Starting testing of Tabular_MLP...
+loss: 0.16712075471878052
+accuracy: 0.9388518929481506
+precission: 0.8925527930259705
+recall: 0.8871294260025024
+auc_pr: 0.949871301651001
+f1_score: 0.8898327959860924
+
+
+Starting testing of Tabular_CNN...
+loss: 0.20510150492191315
+accuracy: 0.9276524782180786
+precission: 0.8790908455848694
+recall: 0.8581292629241943
+auc_pr: 0.9361000061035156
+f1_score: 0.8684835413152112
+
+
+Starting testing of Tabular_RNN...
+loss: 0.14320367574691772
+accuracy: 0.9325132369995117
+precission: 0.882301926612854
+recall: 0.8741791248321533
+auc_pr: 0.9428614377975464
+f1_score: 0.878221693878843
+
+
+Starting testing of Tabular_MLPx...
+loss: 0.19452372193336487
+accuracy: 0.9295745491981506
+precission: 0.8884899020195007
+recall: 0.8542165160179138
+auc_pr: 0.9395661950111389
+f1_score: 0.8710161358378544
+
+
